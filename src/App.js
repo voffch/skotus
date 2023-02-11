@@ -55,84 +55,90 @@ function SearchStatus({reply}) {
   }
 }
 
-function SearchResults({data}) {
-  let searchResultsBody;
-  if (data) {
-    if (data["service-error"]) {
+function SearchCounts({replyJSON, entries}) {
+  if (replyJSON && entries) {
+    if (replyJSON["service-error"]) {
       //great, now I don't remember what would cause this case
-      return <p className='search-results-error'>Error: {data["service-error"]["status"]["statusCode"]}
-                            ({data["service-error"]["status"]["statusText"]})</p>;
+      return <p className='search-results-error'>Error: {replyJSON["service-error"]["status"]["statusCode"]}
+                            ({replyJSON["service-error"]["status"]["statusText"]})</p>;
     } else {
-      const totalResults = data["search-results"]["opensearch:totalResults"];
-      const perPageResults = data["search-results"]["opensearch:itemsPerPage"];
-      const entries = data["search-results"]["entry"];
-      if (parseInt(totalResults) > 0) {
-        const searchResultsList = entries.map((e) => {
-          function EntryType() {
-            return <p className='entry-type'>{e["prism:aggregationType"]} {e["subtypeDescription"]}</p>;
-          }
-          function titleHTML() {
-            return {__html: e["dc:title"]};
-          }
-          function UnescapedTitle() {
-            return <p className='entry-title' dangerouslySetInnerHTML={titleHTML()} />;
-          }
-          function Authors() {
-            return <p className='entry-authors'>{e["dc:creator"]} (et al.?)</p>;
-          }
-          function EntrySource() {
-            const pages = e["prism:pageRange"] ? e["prism:pageRange"] : e["article-number"];
-            return (<p className='entry-source'>
-                <span className='publication-name'>{e["prism:publicationName"]}</span>, {e["prism:coverDisplayDate"]}, {e["prism:volume"]}, {pages}
-              </p>);
-          }
-          function ScopusLink() {
-            let scopusLink;
-            for (let link of e["link"]) {
-              if (link["@ref"] === "scopus") {
-                scopusLink = link["@href"];
-                break;
-              }
-            }
-            return <p className='entry-scopuslink'><a href={scopusLink} target="_blank" rel='noreferrer'>This entry in Scopus: {e["dc:identifier"]}</a></p>;
-          }
-          function DoiLink() {
-            if (e["prism:doi"]) {
-              const doiHref = "https://doi.org/" + e["prism:doi"];
-              return <p className='entry-doilink'><a href={doiHref} target="_blank" rel='noreferrer'>doi:{e["prism:doi"]}</a></p>;
-            }
-          }
-          return (
-            <li className='search-results-entry' key={e["dc:identifier"]}>
-              <EntryType />
-              <UnescapedTitle />
-              <Authors />
-              <EntrySource />
-              <ScopusLink />
-              <DoiLink />
-            </li>
-          );
-          //todo: what if the field not found
-        });
-        searchResultsBody = <ol>{searchResultsList}</ol>
-      }
+      const totalResults = replyJSON["search-results"]["opensearch:totalResults"];
+      const perPageResults = replyJSON["search-results"]["opensearch:itemsPerPage"];
+      const totalEntries = entries.length;
       return (
-        <>
         <div className='search-description'>
-          <p>{totalResults} results in total ({perPageResults} per page)</p>
+          <p>{totalResults} results in total ({perPageResults} per page, {totalEntries} shown)</p>
         </div>
-        <div className='search-results'>
-          {searchResultsBody}
-        </div>
-        </>
       );
     }
+  } else {
+    return null;
   }
+}
+
+function SearchResults({entries}) {
+  let searchResultsBody;
+  if (entries.length > 0) {
+    const searchResultsList = entries.map((e) => {
+      function EntryType() {
+        return <p className='entry-type'>{e["prism:aggregationType"]} {e["subtypeDescription"]}</p>;
+      }
+      function titleHTML() {
+        return {__html: e["dc:title"]};
+      }
+      function UnescapedTitle() {
+        return <p className='entry-title' dangerouslySetInnerHTML={titleHTML()} />;
+      }
+      function Authors() {
+        return <p className='entry-authors'>{e["dc:creator"]} (et al.?)</p>;
+      }
+      function EntrySource() {
+        const pages = e["prism:pageRange"] ? e["prism:pageRange"] : e["article-number"];
+        return (<p className='entry-source'>
+            <span className='publication-name'>{e["prism:publicationName"]}</span>, {e["prism:coverDisplayDate"]}, {e["prism:volume"]}, {pages}
+          </p>);
+      }
+      function ScopusLink() {
+        let scopusLink;
+        for (let link of e["link"]) {
+          if (link["@ref"] === "scopus") {
+            scopusLink = link["@href"];
+            break;
+          }
+        }
+        return <p className='entry-scopuslink'><a href={scopusLink} target="_blank" rel='noreferrer'>This entry in Scopus: {e["dc:identifier"]}</a></p>;
+      }
+      function DoiLink() {
+        if (e["prism:doi"]) {
+          const doiHref = "https://doi.org/" + e["prism:doi"];
+          return <p className='entry-doilink'><a href={doiHref} target="_blank" rel='noreferrer'>doi:{e["prism:doi"]}</a></p>;
+        }
+      }
+      return (
+        <li className='search-results-entry' key={e["dc:identifier"]}>
+          <EntryType />
+          <UnescapedTitle />
+          <Authors />
+          <EntrySource />
+          <ScopusLink />
+          <DoiLink />
+        </li>
+      );
+      //todo: what if the field not found
+    });
+    searchResultsBody = <ol>{searchResultsList}</ol>
+  }
+  return (
+    <div className='search-results'>
+      {searchResultsBody}
+    </div>
+  );
 }
 
 function App() {
   const [reply, setReply] = useState(null);
   const [replyJSON, setReplyJSON] = useState(null);
+  const [entries, setEntries] = useState([]);
 
   const handleQuery = (newQuery) => {
     let url = 'https://api.elsevier.com/content/search/scopus';
@@ -154,7 +160,15 @@ function App() {
       }
       return response.json();
     })
-    .then((json) => setReplyJSON(json))
+    .then((json) => {
+      setReplyJSON(json);
+      try {
+        const newEntries = json["search-results"]["entry"];
+        setEntries([...entries, ...newEntries]);
+      } catch(error) {
+        console.error(error);
+      }
+    })
     .catch((err) => console.error(`Fetch problem: ${err.message}`));
   }
 
@@ -162,7 +176,8 @@ function App() {
     <>
       <SearchForm onSubmit={handleQuery} />
       <SearchStatus reply={reply} />
-      <SearchResults data={replyJSON} />
+      <SearchCounts replyJSON={replyJSON} entries={entries} />
+      <SearchResults entries={entries} />
     </>
   );
 
