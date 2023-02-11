@@ -2,8 +2,8 @@ import {useState} from 'react';
 import './App.css';
 
 //todo:
-//load next n results (+cursor or offset)
-//link to the query descriptions
+//+ load next n results (+cursor or offset)
+//+ link to the query descriptions
 //construct custom query via custom forms
 //dropdown defining the query type
 //request all coauthors via crossref api
@@ -30,7 +30,7 @@ function SearchForm({onSubmit}) {
 
   return (
     <form onSubmit={handleSubmit} className="search-form">
-      <input required type="text" placeholder="author ID or search query" value={query} onChange={(e) => setQuery(e.target.value)}/>
+      <input required type="text" placeholder="search query" value={query} onChange={(e) => setQuery(e.target.value)}/>
       <input type="submit" value="Search" />
     </form>
   );
@@ -67,7 +67,7 @@ function SearchCounts({replyJSON, entries}) {
       const totalEntries = entries.length;
       return (
         <div className='search-description'>
-          <p>{totalResults} results in total ({perPageResults} per page, {totalEntries} shown)</p>
+          <p>results: {totalResults} in total ({perPageResults} per page, {totalEntries} shown)</p>
         </div>
       );
     }
@@ -135,6 +135,23 @@ function SearchResults({entries}) {
   );
 }
 
+function MoreButton({replyJSON, handleQuery}) {
+  if (replyJSON && replyJSON["search-results"]) {
+    const totalResults = parseInt(replyJSON["search-results"]["opensearch:totalResults"]);
+    const startIndex = parseInt(replyJSON["search-results"]["opensearch:startIndex"]);
+    const itemsPerPage = parseInt(replyJSON["search-results"]["opensearch:itemsPerPage"]);
+    if (totalResults > 0 && totalResults >= startIndex + itemsPerPage) {
+      return (
+        <div className='more-button-container'>
+          <input type='button' className='more-button' onClick={() => {handleQuery(null)}} value='↓ more ↓'/>
+        </div>
+      );
+    } else {
+      return null;
+    }
+  }
+}
+
 function App() {
   const [reply, setReply] = useState(null);
   const [replyJSON, setReplyJSON] = useState(null);
@@ -142,12 +159,22 @@ function App() {
 
   const handleQuery = (newQuery) => {
     let url = 'https://api.elsevier.com/content/search/scopus';
-    //AU-ID(14048867800), https://dev.elsevier.com/sc_search_tips.html
-    //if it's a number, then it's an author ID
-    newQuery = isNaN(newQuery) ? newQuery : `AU-ID(${newQuery})`;
-    //seems like 'count' : 25 is the max for a search request
+    //e.g. AU-ID(14048867800), https://dev.elsevier.com/sc_search_tips.html
+    //newQuery = isNaN(newQuery) ? newQuery : `AU-ID(${newQuery})`;
+    //and seems like 'count' : 25 is the max for a search request
+
+    //if not newQuery, then continue the old one
+    const continueQuery = !newQuery;
+    let startIndex = 0;
+    if (continueQuery) {
+      newQuery = replyJSON["search-results"]["opensearch:Query"]["@searchTerms"];
+      const oldStartIndex = parseInt(replyJSON["search-results"]["opensearch:startIndex"]);
+      const itemsPerPage = parseInt(replyJSON["search-results"]["opensearch:itemsPerPage"]);
+      startIndex = oldStartIndex + itemsPerPage;
+    }
     const searchParams = new URLSearchParams({
       'query' : newQuery,
+      'start' : startIndex,
       'count' : 25
     });
     url += '?' + searchParams.toString();
@@ -164,7 +191,13 @@ function App() {
       setReplyJSON(json);
       try {
         const newEntries = json["search-results"]["entry"];
-        setEntries([...entries, ...newEntries]);
+        if (!(newEntries.length === 1 && newEntries[0]["error"])) {
+          if (continueQuery) {
+            setEntries([...entries, ...newEntries]);
+          } else {
+            setEntries(newEntries);
+          }
+        }
       } catch(error) {
         console.error(error);
       }
@@ -178,12 +211,9 @@ function App() {
       <SearchStatus reply={reply} />
       <SearchCounts replyJSON={replyJSON} entries={entries} />
       <SearchResults entries={entries} />
+      <MoreButton replyJSON={replyJSON} handleQuery={handleQuery} />
     </>
   );
-
-  /*<div className='more-button-container'>
-  <input type='button' className='more-button' onClick={handleQuery} value='more'/>
-  </div>*/
 }
 
 export default App;

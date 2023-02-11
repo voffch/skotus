@@ -22,16 +22,21 @@
   min-width: 50%;
 }
 
-.search-form input[type="submit"] {
+.search-form input[type="submit"],
+.more-button {
   border-radius: 0;
   border: 2px solid transparent;
   background-color: var(--skotus-blue);
   color: white;
   padding: 0.4rem;
+}
+
+.search-form input[type="submit"] {
   margin-left: 0.6rem;
 }
 
-.search-form input[type="submit"]:hover {
+.search-form input[type="submit"]:hover,
+.more-button:hover {
   color: black;
   background-color: white;
   border: 2px solid var(--skotus-orange);
@@ -69,4 +74,9 @@
 .entry-source .publication-name {
   font-weight: bold;
   font-style: italic;
+}
+
+.more-button-container {
+  margin: 0 auto;
+  text-align: center;
 }

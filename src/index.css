@@ -23,6 +23,10 @@ header {
   padding: 0.5rem;
 }
 
+header > :last-child {
+  margin-left: auto;
+}
+
 header img {
   border-radius: 10px;
   height: 60px;
