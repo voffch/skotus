@@ -1,13 +1,66 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+  box-sizing: border-box;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+:root {
+  font-family: Verdana, sans-serif;
+  --skotus-orange: #f36d21;
+  --skotus-blue: #0c7dbb;
+  --skotus-lightblue: #009ece;
+  --skotus-gray: #dcdcdc;
+  --skotus-lightgray: #f5f5f5;
+}
+
+body {
+  background-color: var(--skotus-lightgray);
+  color: #2e2e2e;
+}
+
+header {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+header img {
+  border-radius: 10px;
+  height: 60px;
+  width: auto;
+}
+
+header h1 {
+  margin: 0 0 0 0.6rem;
+  font-weight: normal;
+  color: var(--skotus-orange);
+  font-size: 1.5rem;
+}
+
+.text-gray {
+  color: var(--skotus-gray);
+}
+
+main {
+  min-height: calc(100vh - 60px - 1.2rem + 3px);
+  background-color: white;
+  margin: 0 auto;
+  padding: 1rem;
+  max-width: 1000px;
+}
+
+footer {
+  border-top: 2px solid var(--skotus-orange);
+  padding: 1rem;
+  text-align: center;
+  background-color: var(--skotus-gray);
+}
+
+a {
+  text-decoration: none;
+  padding-bottom: 1px;
+  color: var(--skotus-blue);
+}
+
+a:hover {
+  border-bottom: 2px solid var(--skotus-orange);
 }
