@@ -36,9 +36,13 @@ function SearchForm({onSubmit}) {
   );
 }
 
-function SearchStatus({reply, fetching}) {
-  if (fetching) {
-    return <p>Fetching...</p>
+function SearchStatus({reply}) {
+  if (reply === undefined) {
+    return (
+      <div className='search-status'>
+        <p>Fetching...</p>
+      </div>
+    );
   } else if (reply) {
     return (
       <div className='search-status'>
@@ -46,6 +50,8 @@ function SearchStatus({reply, fetching}) {
         <p className={reply.ok ? "allright-text" : "error-text"}>{reply.status} {reply.statusText}</p>
       </div>
     );
+  } else {
+    return null;
   }
 }
 
@@ -127,7 +133,6 @@ function SearchResults({data}) {
 function App() {
   const [reply, setReply] = useState(null);
   const [replyJSON, setReplyJSON] = useState(null);
-  const [fetching, setFetching] = useState(false);
 
   const handleQuery = (newQuery) => {
     let url = 'https://api.elsevier.com/content/search/scopus';
@@ -140,10 +145,9 @@ function App() {
       'count' : 25
     });
     url += '?' + searchParams.toString();
-    setFetching(true);
+    setReply(undefined);
     fetch(url, {headers : scopusRequestHeaders, mode : 'cors'})
     .then((response) => {
-      setFetching(false);
       setReply(response);
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.status}`);
@@ -157,7 +161,7 @@ function App() {
   return (
     <>
       <SearchForm onSubmit={handleQuery} />
-      <SearchStatus reply={reply} fetching={fetching} />
+      <SearchStatus reply={reply} />
       <SearchResults data={replyJSON} />
     </>
   );
