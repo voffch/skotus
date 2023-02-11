@@ -49,6 +49,10 @@
   text-align: center;
 }
 
+.uri-text {
+  font-size: 0.8rem;
+}
+
 .search-results ol {
   padding: 0;
   margin-left: 1rem;

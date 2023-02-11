@@ -4,13 +4,13 @@ import './App.css';
 //todo:
 //+ load next n results (+cursor or offset)
 //+ link to the query descriptions
-//construct custom query via custom forms
-//dropdown defining the query type
-//request all coauthors via crossref api
 //dropdown for sorting the search results
+//dropdown defining the query type
+//construct custom query via custom forms
 //show the number of citations
-//show author orcid/affiliation (popup?) if available
 //load "n" results available via successive api requests
+//request all coauthors via crossref api
+//show author orcid/affiliation (popup?) if available
 //?more info (abstract?) from crossref if available
 
 const myScopusApiKey = 'a0ea0be72869dfb9e69da96e760f62b9';
@@ -46,7 +46,7 @@ function SearchStatus({reply}) {
   } else if (reply) {
     return (
       <div className='search-status'>
-        <p>{reply.url}</p>
+        <p className='uri-text'>{decodeURI(reply.url)}</p>
         <p className={reply.ok ? "allright-text" : "error-text"}>{reply.status} {reply.statusText}</p>
       </div>
     );
@@ -81,7 +81,13 @@ function SearchResults({entries}) {
   if (entries.length > 0) {
     const searchResultsList = entries.map((e) => {
       function EntryType() {
-        return <p className='entry-type'>{e["prism:aggregationType"]} {e["subtypeDescription"]}</p>;
+        let citedbyText = "";
+        const citedbyCount = e["citedby-count"];
+        citedbyText = citedbyCount ? ` • ${citedbyCount} citation` : "";
+        if (citedbyCount !== "1") {
+          citedbyText += 's';
+        }
+        return <p className='entry-type'>{e["prism:aggregationType"]} {e["subtypeDescription"]}{citedbyText}</p>;
       }
       function titleHTML() {
         return {__html: e["dc:title"]};
