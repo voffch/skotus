@@ -4,11 +4,14 @@ import './App.css';
 //todo:
 //+ load next n results (+cursor or offset)
 //+ link to the query descriptions
-//dropdown for sorting the search results
+//+ dropdown for sorting the search results
 //dropdown defining the query type
 //construct custom query via custom forms
-//show the number of citations
+//steal this article from scihub link
+//+ show the number of citations
 //load "n" results available via successive api requests
+//export search results as text
+//export citation
 //request all coauthors via crossref api
 //show author orcid/affiliation (popup?) if available
 //?more info (abstract?) from crossref if available
@@ -21,17 +24,39 @@ const scopusRequestHeaders = new Headers({
 });
 
 function SearchForm({onSubmit}) {
-  const [query, setQuery] = useState("");
 
   function handleSubmit(event) {
     event.preventDefault();
-    onSubmit(query);
+    const form = event.target;
+    const formData = new FormData(form);
+    const formJson = Object.fromEntries(formData.entries());
+    const newQuery = {
+      'query' : formJson['query'],
+      'sort' : formJson['sort-order'] + formJson['sort-by']
+    };
+    onSubmit(newQuery);
   }
 
   return (
     <form onSubmit={handleSubmit} className="search-form">
-      <input required type="text" placeholder="search query" value={query} onChange={(e) => setQuery(e.target.value)}/>
-      <input type="submit" value="Search" />
+      <div className='search-string' autoComplete='on'>
+        <input required type="text" placeholder="search query" name='query' />
+        <input type="submit" value="Search" />
+      </div>
+      <div className='sort-dropdowns'>
+        <label htmlFor="sort-by">Sort by 
+          <select name="sort-by" id="sort-by" defaultValue="pubyear">
+            <option value='pubyear'>Publication year</option>
+            <option value='coverDate'>Cover date</option>
+            <option value='relevancy'>Relevancy</option>
+            <option value='citedby-count'>Citation count</option>
+          </select>
+        </label>
+        <select name='sort-order' id='sort-order' defaultValue="-">
+          <option value='-'>Descending</option>
+          <option value='+'>Ascending</option>
+        </select>
+      </div>
     </form>
   );
 }
@@ -90,7 +115,11 @@ function SearchResults({entries}) {
         return <p className='entry-type'>{e["prism:aggregationType"]} {e["subtypeDescription"]}{citedbyText}</p>;
       }
       function titleHTML() {
-        return {__html: e["dc:title"]};
+        let title = e["dc:title"];
+        //correcting the subscripts
+        const regex = /inf>/ig;
+        title = title.replaceAll(regex, "sub>");
+        return {__html: title};
       }
       function UnescapedTitle() {
         return <p className='entry-title' dangerouslySetInnerHTML={titleHTML()} />;
@@ -168,21 +197,28 @@ function App() {
     //e.g. AU-ID(14048867800), https://dev.elsevier.com/sc_search_tips.html
     //newQuery = isNaN(newQuery) ? newQuery : `AU-ID(${newQuery})`;
     //and seems like 'count' : 25 is the max for a search request
-
     //if not newQuery, then continue the old one
     const continueQuery = !newQuery;
     let startIndex = 0;
+    let searchParams;
     if (continueQuery) {
       newQuery = replyJSON["search-results"]["opensearch:Query"]["@searchTerms"];
       const oldStartIndex = parseInt(replyJSON["search-results"]["opensearch:startIndex"]);
       const itemsPerPage = parseInt(replyJSON["search-results"]["opensearch:itemsPerPage"]);
       startIndex = oldStartIndex + itemsPerPage;
+      //getting the searchParams from the last reply url and replacing only the start value
+      const url = new URL(reply.url);
+      const searchParamsArray = Array.from(url.searchParams.entries());
+      const newSearchParamsArray = searchParamsArray.map(x => x[0] === "start" ? [x[0], startIndex.toString()]: x);
+      searchParams = new URLSearchParams(newSearchParamsArray);
+    } else {
+      searchParams = new URLSearchParams({
+        'query' : newQuery["query"],
+        'sort' : newQuery["sort"],
+        'start' : startIndex,
+        'count' : 25
+      });
     }
-    const searchParams = new URLSearchParams({
-      'query' : newQuery,
-      'start' : startIndex,
-      'count' : 25
-    });
     url += '?' + searchParams.toString();
     setReply(undefined);
     fetch(url, {headers : scopusRequestHeaders, mode : 'cors'})
