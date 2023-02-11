@@ -7,7 +7,7 @@ import './App.css';
 //+ dropdown for sorting the search results
 //dropdown defining the query type
 //construct custom query via custom forms
-//steal this article from scihub link
+//+ openaccess or grab this article from scihub link
 //+ show the number of citations
 //load "n" results available via successive api requests
 //export search results as text
@@ -149,6 +149,16 @@ function SearchResults({entries}) {
           return <p className='entry-doilink'><a href={doiHref} target="_blank" rel='noreferrer'>doi:{e["prism:doi"]}</a></p>;
         }
       }
+      function AccessIndicator() {
+        if (e["openaccessFlag"]) {
+          return <p className='access-indicator'>This is an open access article</p>;
+        } else if (e["prism:doi"]) {
+          const sciHubHref = `https://sci-hub.ru/${e["prism:doi"]}`;
+          return <p className='access-indicator'><a href={sciHubHref} target="_blank" rel='noreferrer'>Grab this from SciHub</a></p>;
+        } else {
+          return null;
+        }
+      }
       return (
         <li className='search-results-entry' key={e["dc:identifier"]}>
           <EntryType />
@@ -157,6 +167,7 @@ function SearchResults({entries}) {
           <EntrySource />
           <ScopusLink />
           <DoiLink />
+          <AccessIndicator />
         </li>
       );
       //todo: what if the field not found
