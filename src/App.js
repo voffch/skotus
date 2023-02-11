@@ -233,11 +233,16 @@ function App() {
       setReplyJSON(json);
       try {
         const newEntries = json["search-results"]["entry"];
-        if (!(newEntries.length === 1 && newEntries[0]["error"])) {
-          if (continueQuery) {
+        const searchError = (newEntries.length === 1 && newEntries[0]["error"]);
+        if (continueQuery) {
+          if (!searchError) {
             setEntries([...entries, ...newEntries]);
-          } else {
+          }
+        } else {
+          if (!searchError) {
             setEntries(newEntries);
+          } else {
+            setEntries([]);
           }
         }
       } catch(error) {
