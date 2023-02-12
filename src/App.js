@@ -5,7 +5,8 @@ import './App.css';
 //+ load next n results (+cursor or offset)
 //+ link to the query descriptions
 //+ dropdown for sorting the search results
-//dropdown defining the query type
+//+ dropdown defining the query type
+//+ change placeholder text depending on dropdown
 //construct custom query via custom forms
 //+ openaccess or grab this article from scihub link
 //+ show the number of citations
@@ -23,6 +24,78 @@ const scopusRequestHeaders = new Headers({
   'X-ELS-APIKey' : myScopusApiKey
 });
 
+function SearchString() {
+  const [placeholder, setPlaceholder] = useState('14048867800');
+  const [text, setText] = useState('');
+
+  function changePlaceholder(val) {
+    const placeholderDict = {
+      'AU-ID': 'e.g., 14048867800',
+      'AUTHOR-NAME': 'e.g., makaka, g',
+      'AFFIL': 'e.g., ural university',
+      'FIRSTAUTH': 'e.g., ivanov, i',
+      'EDITOR' : 'e.g., bishop, s',
+      'TITLE-ABS-KEY' : 'e.g., brain cancer',
+      'TITLE' : 'e.g., high entropy oxide',
+      'ABS' : 'e.g., anal sphincter',
+      'KEY' : 'e.g., perovskite',
+      'AUTHKEY' : 'e.g., thermochemistry',
+      'CHEM' : 'CAS No or chemical name',
+      'PUBYEAR' : 'e.g., 1999, or >1999, or <1999',
+      'VOLUME' : 'e.g., 5',
+      'ISSUE' : 'e.g., 1',
+      'PAGES' : 'e.g., 1-6, or 1, or 6',
+      'DOI' : 'e.g., 10.1152/physrev.2001.81.2.741',
+      'SRCTITLE' : 'e.g., chemical physics',
+      'EXACTSRCTITLE' : 'e.g., materials',
+      'ISSN' : 'e.g., 1528-0020',
+      'ALL' : 'searches in several fields',
+      'REF' : 'searches in references',
+      '' : 'see Query Language Tips'
+    };
+    const hint = placeholderDict[val] ? placeholderDict[val] : 'search query';
+    setPlaceholder(hint);
+  }
+
+  return (
+    <div className='search-string' autoComplete='on'>
+      <select name='field' className='where-search-dropdown' defaultValue="AU-ID" onChange={e => changePlaceholder(e.target.value)}>
+        <optgroup label='Author'>
+          <option value='AU-ID'>Scopus author ID</option>
+          <option value='AUTHOR-NAME'>Author name</option>
+          <option value='AFFIL'>Affiliation</option>
+          <option value='FIRSTAUTH'>First author name</option>
+          <option value='EDITOR'>Editor name</option>
+        </optgroup>
+        <optgroup label='Article'>
+          <option value='TITLE-ABS-KEY'>Title, Abstract, Keywords</option>
+          <option value='TITLE'>Title</option>
+          <option value='ABS'>Abstract</option>
+          <option value='KEY'>Keywords</option>
+          <option value='AUTHKEY'>Author's keywords</option>
+          <option value='CHEM'>Chemical</option>
+          <option value='PUBYEAR'>Year</option>
+          <option value='VOLUME'>Volume</option>
+          <option value='ISSUE'>Issue</option>
+          <option value='PAGES'>Page(s)</option>
+          <option value='DOI'>DOI</option>
+        </optgroup>
+        <optgroup label='Source'>
+          <option value='SRCTITLE'>Source title</option>
+          <option value='EXACTSRCTITLE'>Exact source title</option>
+          <option value='ISSN'>ISSN</option>
+        </optgroup>
+        <optgroup label='More'>
+          <option value='ALL'>Everywhere</option>
+          <option value='REF'>References</option>
+          <option value=''>Custom Query</option>
+        </optgroup>
+      </select>
+      <input required type="text" placeholder={placeholder} name='query' value={text} onChange={e => setText(e.target.value)} />
+    </div>
+  );
+}
+
 function SearchForm({onSubmit}) {
 
   function handleSubmit(event) {
@@ -30,8 +103,34 @@ function SearchForm({onSubmit}) {
     const form = event.target;
     const formData = new FormData(form);
     const formJson = Object.fromEntries(formData.entries());
+    //constructing the query string from the form entries
+    //https://dev.elsevier.com/sc_search_tips.html
+    const searchField = formJson['field'];
+    const searchText = formJson['query'];
+    //if searchField is '' than it's a custom query
+    let queryString = '';
+    switch (searchField) {
+      case '':
+        queryString = searchText;
+        break;
+      case 'PUBYEAR':
+      case 'pubyear':
+        const re = /\s*(?<symbol>[<>=]?)\s*(?<year>\d+)\s*/;
+        const match = searchText.match(re);
+        if (match) {
+          if (match.groups.symbol) {
+            queryString = `PUBYEAR ${match.groups.symbol} ${match.groups.year}`;
+          } else {
+            queryString = `PUBYEAR = ${match.groups.year}`;
+          }
+        }
+        break;
+      default:
+        queryString = `${searchField}(${searchText})`;
+        break;
+    }
     const newQuery = {
-      'query' : formJson['query'],
+      'query' : queryString,
       'sort' : formJson['sort-order'] + formJson['sort-by']
     };
     onSubmit(newQuery);
@@ -39,42 +138,7 @@ function SearchForm({onSubmit}) {
 
   return (
     <form onSubmit={handleSubmit} className="search-form">
-      <div className='search-string' autoComplete='on'>
-        <select name='where-search' className='where-search-dropdown' defaultValue="AU-ID">
-          <optgroup label='Author'>
-            <option value='AU-ID'>Scopus author ID</option>
-            <option value='AUTHOR-NAME'>Author name</option>
-            <option value='AFFIL'>Affiliation</option>
-            <option value='FIRSTAUTH'>First author name</option>
-            <option value='EDITOR'>Editor name</option>
-          </optgroup>
-          <optgroup label='Article'>
-            <option value='TITLE-ABS-KEY'>Title, Abstract, Keywords</option>
-            <option value='TITLE'>Title</option>
-            <option value='ABS'>Abstract</option>
-            <option value='KEY'>Keywords</option>
-            <option value='AUTHKEY'>Author's keywords</option>
-            <option value='CHEM'>Chemical</option>
-            <option value='PUBYEAR'>Year</option>
-            <option value='VOLUME'>Volume</option>
-            <option value='ISSUE'>Issue</option>
-            <option value='PAGES'>Page(s)</option>
-            <option value='DOI'>DOI</option>
-          </optgroup>
-          <optgroup label='Source'>
-            <option value='SRCTITLE'>Source title</option>
-            <option value='EXACTSRCTITLE'>Exact source title</option>
-            <option value='ISSN'>ISSN</option>
-            <option value='ISBN'>ISBN</option>
-          </optgroup>
-          <optgroup label='More'>
-            <option value='ALL'>Everywhere</option>
-            <option value='REF'>References</option>
-            <option value=''>Custom Query</option>
-          </optgroup>
-        </select>
-        <input required type="text" placeholder="search query" name='query' />
-      </div>
+      <SearchString />
       <div className='sort-dropdowns'>
         <label htmlFor="sort-by">Sort by 
           <select name="sort-by" id="sort-by" defaultValue="pubyear">
@@ -219,7 +283,7 @@ function MoreButton({replyJSON, handleQuery}) {
     const totalResults = parseInt(replyJSON["search-results"]["opensearch:totalResults"]);
     const startIndex = parseInt(replyJSON["search-results"]["opensearch:startIndex"]);
     const itemsPerPage = parseInt(replyJSON["search-results"]["opensearch:itemsPerPage"]);
-    if (totalResults > 0 && totalResults >= startIndex + itemsPerPage) {
+    if (totalResults > startIndex + itemsPerPage) {
       return (
         <div className='more-button-container'>
           <input type='button' className='more-button' onClick={() => {handleQuery(null)}} value='↓ more ↓'/>
@@ -238,9 +302,6 @@ function App() {
 
   const handleQuery = (newQuery) => {
     let url = 'https://api.elsevier.com/content/search/scopus';
-    //e.g. AU-ID(14048867800), https://dev.elsevier.com/sc_search_tips.html
-    //newQuery = isNaN(newQuery) ? newQuery : `AU-ID(${newQuery})`;
-    //and seems like 'count' : 25 is the max for a search request
     //if not newQuery, then continue the old one
     const continueQuery = !newQuery;
     let startIndex = 0;
@@ -256,6 +317,7 @@ function App() {
       const newSearchParamsArray = searchParamsArray.map(x => x[0] === "start" ? [x[0], startIndex.toString()]: x);
       searchParams = new URLSearchParams(newSearchParamsArray);
     } else {
+      //seems like 'count' : 25 is the max for a search request
       searchParams = new URLSearchParams({
         'query' : newQuery["query"],
         'sort' : newQuery["sort"],
