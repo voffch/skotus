@@ -40,8 +40,40 @@ function SearchForm({onSubmit}) {
   return (
     <form onSubmit={handleSubmit} className="search-form">
       <div className='search-string' autoComplete='on'>
+        <select name='where-search' className='where-search-dropdown' defaultValue="AU-ID">
+          <optgroup label='Author'>
+            <option value='AU-ID'>Scopus author ID</option>
+            <option value='AUTHOR-NAME'>Author name</option>
+            <option value='AFFIL'>Affiliation</option>
+            <option value='FIRSTAUTH'>First author name</option>
+            <option value='EDITOR'>Editor name</option>
+          </optgroup>
+          <optgroup label='Article'>
+            <option value='TITLE-ABS-KEY'>Title, Abstract, Keywords</option>
+            <option value='TITLE'>Title</option>
+            <option value='ABS'>Abstract</option>
+            <option value='KEY'>Keywords</option>
+            <option value='AUTHKEY'>Author's keywords</option>
+            <option value='CHEM'>Chemical</option>
+            <option value='PUBYEAR'>Year</option>
+            <option value='VOLUME'>Volume</option>
+            <option value='ISSUE'>Issue</option>
+            <option value='PAGES'>Page(s)</option>
+            <option value='DOI'>DOI</option>
+          </optgroup>
+          <optgroup label='Source'>
+            <option value='SRCTITLE'>Source title</option>
+            <option value='EXACTSRCTITLE'>Exact source title</option>
+            <option value='ISSN'>ISSN</option>
+            <option value='ISBN'>ISBN</option>
+          </optgroup>
+          <optgroup label='More'>
+            <option value='ALL'>Everywhere</option>
+            <option value='REF'>References</option>
+            <option value=''>Custom Query</option>
+          </optgroup>
+        </select>
         <input required type="text" placeholder="search query" name='query' />
-        <input type="submit" value="Search" />
       </div>
       <div className='sort-dropdowns'>
         <label htmlFor="sort-by">Sort by 
@@ -57,6 +89,7 @@ function SearchForm({onSubmit}) {
           <option value='+'>Ascending</option>
         </select>
       </div>
+      <input type="submit" value="Search" />
     </form>
   );
 }
