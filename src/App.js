@@ -15,7 +15,7 @@ import './App.css';
 //export citation
 //request all coauthors via crossref api
 //show author orcid/affiliation (popup?) if available
-//?more info (abstract?) from crossref if available
+//?more info from crossref if available
 
 const myScopusApiKey = 'a0ea0be72869dfb9e69da96e760f62b9';
 const scopusRequestHeaders = new Headers({
@@ -24,9 +24,15 @@ const scopusRequestHeaders = new Headers({
   'X-ELS-APIKey' : myScopusApiKey
 });
 
-function SearchString() {
-  const [placeholder, setPlaceholder] = useState('14048867800');
-  const [text, setText] = useState('');
+function Query(field = 'AU-ID', text = '', bool = 'AND') {
+  this.field = field;
+  this.text = text;
+  this.bool = bool;
+}
+
+function SearchString({handler, query}) {
+  const [placeholder, setPlaceholder] = useState('e.g., 14048867800');
+  //const [query, setQuery] = useState(new Query());
 
   function changePlaceholder(val) {
     const placeholderDict = {
@@ -58,8 +64,17 @@ function SearchString() {
   }
 
   return (
-    <div className='search-string' autoComplete='on'>
-      <select name='field' className='where-search-dropdown' defaultValue="AU-ID" onChange={e => changePlaceholder(e.target.value)}>
+    <>
+      <select 
+      name='field' 
+      className='where-search-dropdown' 
+      //defaultValue="AU-ID" 
+      value = {query.field} 
+      onChange={e => {
+        changePlaceholder(e.target.value);
+        //setQuery({...query, field : e.target.value});
+        handler('field', e.target.value);
+      }}>
         <optgroup label='Author'>
           <option value='AU-ID'>Scopus author ID</option>
           <option value='AUTHOR-NAME'>Author name</option>
@@ -91,12 +106,57 @@ function SearchString() {
           <option value=''>Custom Query</option>
         </optgroup>
       </select>
-      <input required type="text" placeholder={placeholder} name='query' value={text} onChange={e => setText(e.target.value)} />
-    </div>
+      <input 
+      required 
+      type="text" 
+      placeholder={placeholder} 
+      name='query' 
+      value = {query.text} 
+      onChange={e => {
+        //setQuery({...query, text : e.target.value});
+        handler('text', e.target.value);
+      }} />
+    </>
+  );
+}
+
+function SearchStringList({queries, updateHandler, addRemoveHandler}) {
+  const searchStrings = queries.map((q, index) => {
+    return (
+    <li key={index} className='search-string' autoComplete='on'>
+      <SearchString query={q} handler={(what, content) => updateHandler(what, content, index)} />
+      <AddRemoveSearchString add={true} handler={addRemoveHandler} />
+    </li>
+    );
+  });
+  return <ul>{searchStrings}</ul>;
+}
+
+function AddRemoveSearchString({add, handler}) {
+  const plusMinus = add ? '+' : '-';
+  return (
+    <span className='add-remove-search' onClick={handler}>{plusMinus}</span>
   );
 }
 
 function SearchForm({onSubmit}) {
+  const [queries, setQueries] = useState([new Query()]);
+
+  function handleAddRemoveQuery() {
+    setQueries([...queries, new Query()]);
+  }
+
+  function handleUpdateQuery(what, content, index) {
+    setQueries(queries.map((q, i) => {
+      if (i !== index) {
+        return q;
+      } else {
+        let newq = {...q};
+        newq[what] = content;
+        return newq;
+      }
+    }));
+  }
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -138,7 +198,7 @@ function SearchForm({onSubmit}) {
 
   return (
     <form onSubmit={handleSubmit} className="search-form">
-      <SearchString />
+      <SearchStringList queries={queries} updateHandler={handleUpdateQuery} addRemoveHandler={handleAddRemoveQuery} />
       <div className='sort-dropdowns'>
         <label htmlFor="sort-by">Sort by 
           <select name="sort-by" id="sort-by" defaultValue="pubyear">

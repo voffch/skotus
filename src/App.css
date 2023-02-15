@@ -21,6 +21,15 @@
   gap: 0.4rem;
 }
 
+.add-remove-search {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--skotus-blue);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .where-search-dropdown {
   text-align: center;
 }
