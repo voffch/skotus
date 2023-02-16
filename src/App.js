@@ -24,7 +24,8 @@ const scopusRequestHeaders = new Headers({
   'X-ELS-APIKey' : myScopusApiKey
 });
 
-function Query(field = 'AU-ID', text = '', bool = 'AND') {
+function Query({field = 'AU-ID', text = '', bool = 'AND', id = 0} = {}) {
+  this.id = id;
   this.field = field;
   this.text = text;
   this.bool = bool;
@@ -32,7 +33,6 @@ function Query(field = 'AU-ID', text = '', bool = 'AND') {
 
 function SearchString({handler, query}) {
   const [placeholder, setPlaceholder] = useState('e.g., 14048867800');
-  //const [query, setQuery] = useState(new Query());
 
   function changePlaceholder(val) {
     const placeholderDict = {
@@ -72,7 +72,6 @@ function SearchString({handler, query}) {
       value = {query.field} 
       onChange={e => {
         changePlaceholder(e.target.value);
-        //setQuery({...query, field : e.target.value});
         handler('field', e.target.value);
       }}>
         <optgroup label='Author'>
@@ -113,7 +112,6 @@ function SearchString({handler, query}) {
       name='query' 
       value = {query.text} 
       onChange={e => {
-        //setQuery({...query, text : e.target.value});
         handler('text', e.target.value);
       }} />
     </>
@@ -123,27 +121,39 @@ function SearchString({handler, query}) {
 function SearchStringList({queries, updateHandler, addRemoveHandler}) {
   const searchStrings = queries.map((q, index) => {
     return (
-    <li key={index} className='search-string' autoComplete='on'>
+    <li key={q.id} className='search-string' autoComplete='on'>
       <SearchString query={q} handler={(what, content) => updateHandler(what, content, index)} />
-      <AddRemoveSearchString add={true} handler={addRemoveHandler} />
+      <AddRemoveSearchString addOnly={queries.length <= 1} handler={addRemoveHandler} index={index} />
     </li>
     );
   });
   return <ul>{searchStrings}</ul>;
 }
 
-function AddRemoveSearchString({add, handler}) {
-  const plusMinus = add ? '+' : '-';
+function AddRemoveSearchString({addOnly, handler, index}) {
+  const minus = addOnly ? null : <span className='add-remove-search' onClick={() => handler('-', index)}>-</span>;
   return (
-    <span className='add-remove-search' onClick={handler}>{plusMinus}</span>
+    <>
+      <span className='add-remove-search' onClick={() => handler('+', index)}>+</span>
+      {minus}
+    </>
   );
 }
 
 function SearchForm({onSubmit}) {
   const [queries, setQueries] = useState([new Query()]);
 
-  function handleAddRemoveQuery() {
-    setQueries([...queries, new Query()]);
+  function handleAddRemoveQuery(whatToDo, index) {
+    if (whatToDo === '-') {
+      setQueries(queries.filter((q,i) => i !== index));
+    } else {
+      const timestamp = Date.now();
+      const insertAt = index + 1; // Could be any index
+      setQueries([
+        ...queries.slice(0, insertAt), 
+        new Query({id : timestamp}),
+        ...queries.slice(insertAt)]);
+    }
   }
 
   function handleUpdateQuery(what, content, index) {
