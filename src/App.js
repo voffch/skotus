@@ -118,26 +118,40 @@ function SearchString({handler, query}) {
   );
 }
 
+function AddRemoveSearchString({addOnly, handler, index}) {
+  const minus = addOnly ? null : <span className='add-remove-search' onClick={() => handler('-', index)}>-</span>;
+  return (
+    <>
+      {minus}
+      <span className='add-remove-search' onClick={() => handler('+', index)}>+</span>
+    </>
+  );
+}
+
+function BooleanSearchOperator() {
+  return (
+      <select 
+      name='bool' 
+      className='bool-search-dropdown' 
+      defaultValue="AND">
+          <option value='AND'>AND</option>
+          <option value='OR'>OR</option>
+          <option value='AND NOT'>AND NOT</option>
+      </select>
+  );
+}
+
 function SearchStringList({queries, updateHandler, addRemoveHandler}) {
   const searchStrings = queries.map((q, index) => {
     return (
     <li key={q.id} className='search-string' autoComplete='on'>
+      {index > 0 ? <BooleanSearchOperator /> : null}
       <SearchString query={q} handler={(what, content) => updateHandler(what, content, index)} />
       <AddRemoveSearchString addOnly={queries.length <= 1} handler={addRemoveHandler} index={index} />
     </li>
     );
   });
   return <ul>{searchStrings}</ul>;
-}
-
-function AddRemoveSearchString({addOnly, handler, index}) {
-  const minus = addOnly ? null : <span className='add-remove-search' onClick={() => handler('-', index)}>-</span>;
-  return (
-    <>
-      <span className='add-remove-search' onClick={() => handler('+', index)}>+</span>
-      {minus}
-    </>
-  );
 }
 
 function SearchForm({onSubmit}) {
