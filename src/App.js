@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import './App.css';
+import pigLogo from './logo.jpg';
 
 //todo:
 //+ load next n results (+cursor or offset)
@@ -453,11 +454,24 @@ function App() {
 
   return (
     <>
-      <SearchForm onSubmit={handleQuery} />
-      <SearchStatus reply={reply} />
-      <SearchCounts replyJSON={replyJSON} entries={entries} />
-      <SearchResults entries={entries} />
-      <MoreButton replyJSON={replyJSON} handleQuery={handleQuery} />
+      <header>
+        <img src={pigLogo} alt="pig logo" />
+        <h1>Skotus <span className="text-gray">Eternal Beta</span></h1>
+        <div className='search-tips-container'>
+          <a href='https://dev.elsevier.com/sc_search_tips.html' target='_blank' rel='noreferrer'>Query Language Tips</a>
+        </div>
+      </header>
+      <main>
+        <SearchForm onSubmit={handleQuery} />
+        <SearchStatus reply={reply} />
+        <SearchCounts replyJSON={replyJSON} entries={entries} />
+        <SearchResults entries={entries} />
+        <MoreButton replyJSON={replyJSON} handleQuery={handleQuery} />
+      </main>
+      <footer>
+        <p>these data were obtained via <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Scopus API</a></p>
+        <p>see also <a href="https://www.scopus.com/freelookup/form/author.uri" target="_blank" rel='noreferrer'>Free Scopus Author Search</a></p>
+      </footer>
     </>
   );
 }
