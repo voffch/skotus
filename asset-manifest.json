@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/skotus/static/css/main.65096a25.css",
+    "main.css": "/skotus/static/css/main.4869d03e.css",
     "main.js": "/skotus/static/js/main.c3dfe307.js",
     "static/media/logo.jpg": "/skotus/static/media/logo.ece5d0594a66517d6ed0.jpg",
     "index.html": "/skotus/index.html",
-    "main.65096a25.css.map": "/skotus/static/css/main.65096a25.css.map",
+    "main.4869d03e.css.map": "/skotus/static/css/main.4869d03e.css.map",
     "main.c3dfe307.js.map": "/skotus/static/js/main.c3dfe307.js.map"
   },
   "entrypoints": [
-    "static/css/main.65096a25.css",
+    "static/css/main.4869d03e.css",
     "static/js/main.c3dfe307.js"
   ]
 }
