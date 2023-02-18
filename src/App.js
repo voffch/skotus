@@ -7,9 +7,10 @@ import './App.css';
 //+ dropdown for sorting the search results
 //+ dropdown defining the query type
 //+ change placeholder text depending on dropdown
-//construct custom query via custom forms
+//+ construct custom query via custom forms
 //+ openaccess or grab this article from scihub link
 //+ show the number of citations
+//modals for info 
 //load "n" results available via successive api requests
 //https://dev.elsevier.com/support.html cursor instead of page pagination ?
 //export search results as text
@@ -188,32 +189,41 @@ function SearchForm({onSubmit}) {
     const formJson = Object.fromEntries(formData.entries());
     //constructing the query string from the form entries
     //https://dev.elsevier.com/sc_search_tips.html
-    const searchField = formJson['field'];
-    const searchText = formJson['query'];
-    //if searchField is '' than it's a custom query
-    let queryString = '';
-    switch (searchField) {
-      case '':
-        queryString = searchText;
-        break;
-      case 'PUBYEAR':
-      case 'pubyear':
-        const re = /\s*(?<symbol>[<>=]?)\s*(?<year>\d+)\s*/;
-        const match = searchText.match(re);
-        if (match) {
-          if (match.groups.symbol) {
-            queryString = `PUBYEAR ${match.groups.symbol} ${match.groups.year}`;
-          } else {
-            queryString = `PUBYEAR = ${match.groups.year}`;
+    //formJson is now used for the sort order only,
+    //everything else we're getting from the queries state
+    const wholeQueryString = queries.reduce((whole, query, index) => {
+      //if search field is '' than it's a custom query
+      let queryString = '';
+      switch (query['field']) {
+        case '':
+          queryString = query['text'];
+          break;
+        //for reasons unknown, pubyear is a special case
+        case 'PUBYEAR':
+        case 'pubyear':
+          const re = /\s*(?<symbol>[<>=]?)\s*(?<year>\d+)\s*/;
+          const match = query['text'].match(re);
+          if (match) {
+            if (match.groups.symbol) {
+              queryString = `PUBYEAR ${match.groups.symbol} ${match.groups.year}`;
+            } else {
+              queryString = `PUBYEAR = ${match.groups.year}`;
+            }
           }
-        }
-        break;
-      default:
-        queryString = `${searchField}(${searchText})`;
-        break;
-    }
+          break;
+        default:
+          queryString = `${query['field']}(${query['text']})`;
+          break;
+      }
+      //if not the first or only search string, have to prepend the boolean operator
+      if (index > 0) {
+        queryString = `${query['bool']} ${queryString}`;
+      }
+      return `${whole} ${queryString}`;
+    }, '');
+
     const newQuery = {
-      'query' : queryString,
+      'query' : wholeQueryString,
       'sort' : formJson['sort-order'] + formJson['sort-by']
     };
     onSubmit(newQuery);

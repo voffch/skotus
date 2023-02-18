@@ -73,6 +73,7 @@
   background-color: var(--skotus-blue);
   color: white;
   padding: 0.4rem;
+  transition: all 0.3s;
 }
 
 .search-form input[type="submit"] {
@@ -85,7 +86,6 @@
   color: black;
   background-color: white;
   border: 2px solid var(--skotus-orange);
-  transition: color 0.3s;
   cursor: pointer;
 }
 

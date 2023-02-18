@@ -54,9 +54,13 @@ main {
 
 footer {
   border-top: 2px solid var(--skotus-orange);
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   text-align: center;
   background-color: var(--skotus-gray);
+}
+
+footer p {
+  margin: 0.5rem 0;
 }
 
 a {
