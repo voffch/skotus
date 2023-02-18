@@ -17,6 +17,14 @@
   padding: 0;
 }
 
+.search-string:only-of-type .bool-search-dropdown {
+  display: none;
+}
+
+.search-string:first-of-type .bool-search-dropdown {
+  visibility: hidden;
+}
+
 .search-string {
   display: flex;
   justify-content: center;
@@ -34,7 +42,8 @@
   user-select: none;
 }
 
-.where-search-dropdown {
+.where-search-dropdown,
+.bool-search-dropdown {
   text-align: center;
 }
 

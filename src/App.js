@@ -11,6 +11,7 @@ import './App.css';
 //+ openaccess or grab this article from scihub link
 //+ show the number of citations
 //load "n" results available via successive api requests
+//https://dev.elsevier.com/support.html cursor instead of page pagination ?
 //export search results as text
 //export citation
 //request all coauthors via crossref api
@@ -65,6 +66,18 @@ function SearchString({handler, query}) {
 
   return (
     <>
+      <select 
+      name='bool' 
+      className='bool-search-dropdown' 
+      //</>defaultValue="AND"
+      value = {query.bool} 
+      onChange={e => {
+        handler('bool', e.target.value);
+      }}>
+        <option value='AND'>AND</option>
+        <option value='OR'>OR</option>
+        <option value='AND NOT'>AND NOT</option>
+      </select>
       <select 
       name='field' 
       className='where-search-dropdown' 
@@ -128,24 +141,10 @@ function AddRemoveSearchString({addOnly, handler, index}) {
   );
 }
 
-function BooleanSearchOperator() {
-  return (
-      <select 
-      name='bool' 
-      className='bool-search-dropdown' 
-      defaultValue="AND">
-          <option value='AND'>AND</option>
-          <option value='OR'>OR</option>
-          <option value='AND NOT'>AND NOT</option>
-      </select>
-  );
-}
-
 function SearchStringList({queries, updateHandler, addRemoveHandler}) {
   const searchStrings = queries.map((q, index) => {
     return (
     <li key={q.id} className='search-string' autoComplete='on'>
-      {index > 0 ? <BooleanSearchOperator /> : null}
       <SearchString query={q} handler={(what, content) => updateHandler(what, content, index)} />
       <AddRemoveSearchString addOnly={queries.length <= 1} handler={addRemoveHandler} index={index} />
     </li>
