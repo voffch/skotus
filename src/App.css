@@ -21,6 +21,8 @@ header {
   display: flex;
   align-items: center;
   padding: 0.5rem;
+  position: relative;
+  box-shadow: 0 2px 3px 0 var(--skotus-gray);
 }
 
 header > :last-child {
@@ -92,6 +94,7 @@ a:hover {
 
 .search-form ul {
   padding: 0;
+  margin: 0;
 }
 
 .search-string:only-of-type .bool-search-dropdown {
@@ -107,7 +110,13 @@ a:hover {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.2rem;
+  padding: 0.3rem 0;
+  border-top: 3px dotted var(--skotus-gray);
+}
+
+.search-string:first-of-type {
+  border-top: none;
 }
 
 .add-remove-search {
@@ -119,6 +128,10 @@ a:hover {
   user-select: none;
 }
 
+.remove-search {
+  margin-right: 0.3rem;
+}
+
 .where-search-dropdown,
 .bool-search-dropdown {
   text-align: center;
@@ -127,10 +140,12 @@ a:hover {
 .sort-dropdowns {
   align-self: flex-end;
   margin: 0.5rem 0;
+  text-align: right;
 }
 
 .sort-dropdowns select {
-  margin-left: 0.5rem;
+  margin-left: 0.2rem;
+  margin-top: 0.2rem;
 }
 
 .search-form input[type="text"] {
@@ -138,9 +153,9 @@ a:hover {
   border-bottom: 1px solid black;
   outline: none;
   font-size: 1.2rem;
-  padding: 0.2rem;
+  padding: 0.1rem;
   text-align: center;
-  flex: 1 1 auto;
+  flex: 1 0 25ch;
 }
 
 .search-form input[type="submit"],

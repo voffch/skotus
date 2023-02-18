@@ -134,12 +134,12 @@ function SearchString({handler, query}) {
 }
 
 function AddRemoveSearchString({addOnly, handler, index}) {
-  const minus = addOnly ? null : <span className='add-remove-search' onClick={() => handler('-', index)}>-</span>;
+  const minus = addOnly ? null : <span className='add-remove-search remove-search' onClick={() => handler('-', index)}>−</span>;
   return (
-    <>
+    <div className='add-remove-search-container'>
       {minus}
-      <span className='add-remove-search' onClick={() => handler('+', index)}>+</span>
-    </>
+      <span className='add-remove-search add-search' onClick={() => handler('+', index)}>+</span>
+    </div>
   );
 }
 
