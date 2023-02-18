@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/skotus/static/css/main.dea00f7f.css",
+    "main.js": "/skotus/static/js/main.e4f64c9e.js",
+    "static/js/787.09077a60.chunk.js": "/skotus/static/js/787.09077a60.chunk.js",
+    "index.html": "/skotus/index.html",
+    "main.dea00f7f.css.map": "/skotus/static/css/main.dea00f7f.css.map",
+    "main.e4f64c9e.js.map": "/skotus/static/js/main.e4f64c9e.js.map",
+    "787.09077a60.chunk.js.map": "/skotus/static/js/787.09077a60.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.dea00f7f.css",
+    "static/js/main.e4f64c9e.js"
+  ]
+}
