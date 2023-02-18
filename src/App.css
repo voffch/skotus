@@ -188,6 +188,7 @@ a:hover {
 
 .uri-text {
   font-size: 0.8rem;
+  overflow-wrap: break-word;
 }
 
 .search-results ol {
