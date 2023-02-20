@@ -12,6 +12,7 @@ import pigLogo from './logo.jpg';
 //+ openaccess or grab this article from scihub link
 //+ show the number of citations
 //modals for info 
+//get your own api key and store it in the browser
 //load "n" results available via successive api requests
 //https://dev.elsevier.com/support.html cursor instead of page pagination ?
 //export search results as text
@@ -292,73 +293,76 @@ function SearchCounts({replyJSON, entries}) {
   }
 }
 
+//in the following quite a few functions (up to SearchResults), 
+//'e' stands for an entry in the search result entries
+//could've passed more specific props but don't see the need for that right now
+function EntryType({e}) {
+  let citedbyText = "";
+  const citedbyCount = e["citedby-count"];
+  citedbyText = citedbyCount ? ` • ${citedbyCount} citation` : "";
+  if (citedbyCount !== "1") {
+    citedbyText += 's';
+  }
+  return <p className='entry-type'>{e["prism:aggregationType"]} {e["subtypeDescription"]}{citedbyText}</p>;
+}
+function UnescapedTitle({e}) {
+  function titleHTML() {
+    let title = e["dc:title"];
+    //correcting the subscripts
+    const regex = /inf>/ig;
+    title = title.replaceAll(regex, "sub>");
+    return {__html: title};
+  }
+  return <p className='entry-title' dangerouslySetInnerHTML={titleHTML()} />;
+}
+function Authors({e}) {
+  return <p className='entry-authors'>{e["dc:creator"]} (et al.?)</p>;
+}
+function EntrySource({e}) {
+  const pages = e["prism:pageRange"] ? e["prism:pageRange"] : e["article-number"];
+  return (<p className='entry-source'>
+      <span className='publication-name'>{e["prism:publicationName"]}</span>, {e["prism:coverDisplayDate"]}, {e["prism:volume"]}, {pages}
+    </p>);
+}
+function ScopusLink({e}) {
+  let scopusLink;
+  for (let link of e["link"]) {
+    if (link["@ref"] === "scopus") {
+      scopusLink = link["@href"];
+      break;
+    }
+  }
+  return <p className='entry-scopuslink'><a href={scopusLink} target="_blank" rel='noreferrer'>This entry in Scopus: {e["dc:identifier"]}</a></p>;
+}
+function DoiLink({e}) {
+  if (e["prism:doi"]) {
+    const doiHref = "https://doi.org/" + e["prism:doi"];
+    return <p className='entry-doilink'><a href={doiHref} target="_blank" rel='noreferrer'>doi:{e["prism:doi"]}</a></p>;
+  }
+}
+function AccessIndicator({e}) {
+  if (e["openaccessFlag"]) {
+    return <p className='access-indicator'>This is an open access article</p>;
+  } else if (e["prism:doi"]) {
+    const sciHubHref = `https://sci-hub.ru/${e["prism:doi"]}`;
+    return <p className='access-indicator'><a href={sciHubHref} target="_blank" rel='noreferrer'>Grab this from SciHub</a></p>;
+  } else {
+    return null;
+  }
+}
 function SearchResults({entries}) {
   let searchResultsBody;
   if (entries.length > 0) {
     const searchResultsList = entries.map((e) => {
-      function EntryType() {
-        let citedbyText = "";
-        const citedbyCount = e["citedby-count"];
-        citedbyText = citedbyCount ? ` • ${citedbyCount} citation` : "";
-        if (citedbyCount !== "1") {
-          citedbyText += 's';
-        }
-        return <p className='entry-type'>{e["prism:aggregationType"]} {e["subtypeDescription"]}{citedbyText}</p>;
-      }
-      function titleHTML() {
-        let title = e["dc:title"];
-        //correcting the subscripts
-        const regex = /inf>/ig;
-        title = title.replaceAll(regex, "sub>");
-        return {__html: title};
-      }
-      function UnescapedTitle() {
-        return <p className='entry-title' dangerouslySetInnerHTML={titleHTML()} />;
-      }
-      function Authors() {
-        return <p className='entry-authors'>{e["dc:creator"]} (et al.?)</p>;
-      }
-      function EntrySource() {
-        const pages = e["prism:pageRange"] ? e["prism:pageRange"] : e["article-number"];
-        return (<p className='entry-source'>
-            <span className='publication-name'>{e["prism:publicationName"]}</span>, {e["prism:coverDisplayDate"]}, {e["prism:volume"]}, {pages}
-          </p>);
-      }
-      function ScopusLink() {
-        let scopusLink;
-        for (let link of e["link"]) {
-          if (link["@ref"] === "scopus") {
-            scopusLink = link["@href"];
-            break;
-          }
-        }
-        return <p className='entry-scopuslink'><a href={scopusLink} target="_blank" rel='noreferrer'>This entry in Scopus: {e["dc:identifier"]}</a></p>;
-      }
-      function DoiLink() {
-        if (e["prism:doi"]) {
-          const doiHref = "https://doi.org/" + e["prism:doi"];
-          return <p className='entry-doilink'><a href={doiHref} target="_blank" rel='noreferrer'>doi:{e["prism:doi"]}</a></p>;
-        }
-      }
-      function AccessIndicator() {
-        if (e["openaccessFlag"]) {
-          return <p className='access-indicator'>This is an open access article</p>;
-        } else if (e["prism:doi"]) {
-          const sciHubHref = `https://sci-hub.ru/${e["prism:doi"]}`;
-          return <p className='access-indicator'><a href={sciHubHref} target="_blank" rel='noreferrer'>Grab this from SciHub</a></p>;
-        } else {
-          return null;
-        }
-      }
       return (
         <li className='search-results-entry' key={e["dc:identifier"]}>
-          <EntryType />
-          <UnescapedTitle />
-          <Authors />
-          <EntrySource />
-          <ScopusLink />
-          <DoiLink />
-          <AccessIndicator />
+          <EntryType e={e} />
+          <UnescapedTitle e={e} />
+          <Authors e={e} />
+          <EntrySource e={e} />
+          <ScopusLink e={e} />
+          <DoiLink e={e} />
+          <AccessIndicator e={e} />
         </li>
       );
       //todo: what if the field not found
