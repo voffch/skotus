@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import './App.css';
 import pigLogo from './logo.jpg';
+import orcidLogo from './ORCIDiD_iconvector.svg';
 
 //todo:
 //+ load next n results (+cursor or offset)
@@ -13,8 +14,9 @@ import pigLogo from './logo.jpg';
 //+ show the number of citations
 //+ modals for info 
 //+ get your own api key and store it in the browser
-//request all coauthors via crossref api
-//show author orcid/affiliation (popup?) if available
+//+ request all coauthors via crossref api
+//+ show author orcid
+//show author affiliation (popup?) if available
 //?more info from crossref if available
 //load "n" results available via successive api requests
 //https://dev.elsevier.com/support.html cursor instead of page pagination ?
@@ -309,7 +311,70 @@ function UnescapedTitle({e}) {
   return <p className='entry-title' dangerouslySetInnerHTML={titleHTML()} />;
 }
 function Authors({e}) {
-  return <p className='entry-authors'>{e["dc:creator"]} (et al.?)</p>;
+  const doi = e["prism:doi"];
+
+  const [allAuthors, setAllAuthors] = useState('');
+  const [authorsInaccessible, setAuthorsInaccessible] = useState(!doi);
+
+  function fetchAuthors() {
+    const myEmail = 'voffch@gmail.com';
+    let url = `https://api.crossref.org/works/${doi}?mailto=${myEmail}`;
+    const requestHeaders = new Headers({
+      'Accept' : 'application/json'
+    });
+    fetch(url, {headers : requestHeaders, mode : 'cors'})
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((json) => {
+      try {
+        const authors = json["message"]["author"];
+        if (authors) {
+          setAllAuthors(authors.map((author, index) => {
+            return (
+              <span className='author' key={index}>
+                {index > 0 && ', '}
+                {author.prefix && `${author.prefix} `}
+                {author.given && `${author.given} `}
+                {author.family}
+                {author.suffix && ` ${author.suffix}`}
+                {author.ORCID && (
+                <a className='img-link' href={author.ORCID} target="_blank" rel='noreferrer'>
+                  {' '}<img alt="ORCID logo" src={orcidLogo} width="16" height="16" />
+                </a>)}
+              </span>
+            );
+          }, ''));
+        } else {
+          setAuthorsInaccessible(true);
+        }
+      } catch(error) {
+        setAuthorsInaccessible(true);
+        //console.error(error);
+      }
+    })
+    .catch((err) => {
+      setAuthorsInaccessible(true);
+      console.error(`Fetch problem (Crossref): ${err.message}`);
+    });
+  }
+
+  const loadMoreAuthors = (
+    <span>{' '}
+      ({authorsInaccessible ? "et al.?" : <span className='button-link-lookalike' onClick={fetchAuthors}>et al.?</span>})
+    </span>
+  );
+
+  //if no e["dc:creator"] in scopus then no authors whatsoever
+  return e["dc:creator"] ? (
+    <p className='entry-authors'>
+      {allAuthors ? allAuthors : e["dc:creator"]}
+      {!allAuthors && loadMoreAuthors}
+    </p>
+  ) : null;
 }
 function EntrySource({e}) {
   const pages = e["prism:pageRange"] ? e["prism:pageRange"] : e["article-number"];
@@ -504,7 +569,7 @@ function App() {
         console.error(error);
       }
     })
-    .catch((err) => console.error(`Fetch problem: ${err.message}`));
+    .catch((err) => console.error(`Fetch problem (Scopus): ${err.message}`));
   }
 
   return (
@@ -532,14 +597,14 @@ function App() {
         <MoreButton replyJSON={replyJSON} handleQuery={handleQuery} />
       </main>
       <footer>
-        <p>these data were obtained via <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Scopus Search API</a></p>
+        <p>these data were obtained via <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Scopus Search API</a> and <a href="https://api.crossref.org/swagger-ui/" target="_blank" rel='noreferrer'>Crossref API</a></p>
         <p>see also <a href="https://www.scopus.com/freelookup/form/author.uri" target="_blank" rel='noreferrer'>Free Scopus Author Search</a></p>
         <p className='text-small'>this website is not affiliated with Scopus; click the links in the header to learn more</p>
       </footer>
       <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='What is it?'>
-        <p>This app is a user interface to <a href="https://dev.elsevier.com/sc_apis.html" target="_blank" rel='noreferrer'>Scopus Search API</a>. It provides the basic search opportunities to the end users. Because this is a client-side app, it doesn't store any Scopus data on any server (what server lol?). The end user is you, so you are responsible. Deal with it. This was a disclaimer, btw.</p>
+        <p>Disclaimer: this app is mostly a user interface to <a href="https://dev.elsevier.com/sc_apis.html" target="_blank" rel='noreferrer'>Scopus Search API</a> (<a href="https://api.crossref.org/swagger-ui/" target="_blank" rel='noreferrer'>Crossref API</a> is used for now only to load the full author list, if available). It provides the basic search opportunities to the end users. Because this is a client-side app, it doesn't store any Scopus data on any server (what server lol?). The end user is you, so you are responsible. Deal with it.</p>
         <p>This is neither free Scopus nor free lunch (<a href="https://en.wikipedia.org/wiki/There_ain%27t_no_such_thing_as_a_free_lunch" target="_blank" rel='noreferrer'>TANSTAAFL</a>). There are severe restrictions on the content returned in the search responses, the number of search request, and, most importantly, permitted use cases. As the end user, you must also agree with the terms and conditions (see the link below). You've been warned.</p>
-        <p>In fact, by using this app you automatically agree to those because I just said so. For your convenience, here's a checkbox that you cannot uncheck explaining what you've just agreed to.</p>
+        <p>In fact, by using this app you automatically agree to those (because I just said so). For your convenience, here's a checkbox that you cannot uncheck explaining what you've just agreed to.</p>
         <label htmlFor='agreed-to-everything'>
           <input id="agreed-to-everything" type="checkbox" checked readOnly onClick={(e) => e.preventDefault()} />{' '}
           By using this app, I (that means YOU) agree to the terms, conditions and use policies defined for Scopus Search API on the <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Elsevier Developer Portal</a> and solemnly swear to use this tool as indended therein.
@@ -556,6 +621,7 @@ function App() {
           <li key="5">If you're getting some other error, there's something wrong with either my scripts or your search requests. You may try different requests or contact me (if you know how).</li>
         </ul>
         <p>And if you're feeling nerdy or adventurous, like to read documentation, or my custom search form breaks down upon your search requests, you can always check out the official <a href='https://dev.elsevier.com/sc_search_tips.html' target='_blank' rel='noreferrer'>Scopus Search Guide</a> and even construct your own Custom Query.</p>
+        <p>Regarding the author lists: the capability of loading the author list from Crossref on request was added for a quick lookup since Scopus limits the search results to just one first author. It may not work in every case, in particular, because not everyone deposits their DOI with Crossref. Please use this feature sparingly, we do not want to overload the free Crossref API with tons of unnecessary requests.</p>
       </Modal>
       <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='API Key'>
         <ScopusApiKey apiKey={scopusApiKeyText} handler={(apiKey) => handleApiKeyChange(apiKey)} />

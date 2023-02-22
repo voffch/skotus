@@ -105,6 +105,11 @@ a:hover {
   border-bottom: 2px solid var(--skotus-orange);
 }
 
+.img-link, 
+.img-link:hover {
+  border: none;
+}
+
 /* search results */
 
 .error-text {
@@ -285,6 +290,7 @@ a:hover {
   position:fixed;
   background: white;
   width: 90%;
+  max-width: 900px;
   height: auto;
   top:50%;
   left:50%;
