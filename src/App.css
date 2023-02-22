@@ -18,7 +18,7 @@ body {
   color: #2e2e2e;
 }
 
-header {
+.header-main {
   background-color: white;
   display: flex;
   align-items: center;
@@ -27,17 +27,17 @@ header {
   box-shadow: 0 2px 3px 0 var(--skotus-gray);
 }
 
-header > :last-child {
+.header-links-container {
   margin-left: auto;
 }
 
-header img {
+.header-main img {
   border-radius: 10px;
   height: 60px;
   width: auto;
 }
 
-header h1 {
+.header-main h1 {
   margin: 0 0 0 0.6rem;
   font-weight: normal;
   color: var(--skotus-orange);
@@ -265,9 +265,16 @@ a:hover,
 .modal-header {
   width: 100%;
   background: var(--skotus-orange);
+  display: flex;
+  align-items: center;
   color: white;
   padding: 1rem;
+}
+
+.modal-header h2 {
   font-size: 1.5rem;
+  font-weight: normal;
+  margin: 0;
 }
 
 .modal-close-button {
@@ -279,6 +286,7 @@ a:hover,
 	cursor: pointer;
 	outline: inherit;
   font-size: 2rem;
+  margin-left: auto;
 }
 
 .modal-content {

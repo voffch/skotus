@@ -400,7 +400,7 @@ const Modal = ({ handleClose, show, header, children }) => {
     <div className={showHideClassName} onClick={handleClose}>
       <article className="modal-window" onClick={e => e.stopPropagation()}>
         <header className="modal-header">
-          {header}
+          <h2>{header}</h2>
           <button className="modal-close-button" onClick={handleClose}>×</button>
         </header>
         <section className="modal-content">
@@ -477,7 +477,7 @@ function App() {
 
   return (
     <>
-      <header>
+      <header className='header-main'>
         <img src={pigLogo} alt="pig logo" />
         <h1>Skotus <span className="text-gray">Eternal Beta</span></h1>
         <div className='header-links-container'>
