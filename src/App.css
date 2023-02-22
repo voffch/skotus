@@ -95,7 +95,7 @@ footer p {
 
 a {
   text-decoration: none;
-  padding-bottom: 1px;
+  /*padding-bottom: 1px;*/
   color: var(--skotus-blue);
   border-bottom: 2px solid transparent;
   transform: all 0.2s;
@@ -253,6 +253,20 @@ a:hover {
   text-align: center;
 }
 
+.api-key-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#scopus-api-key-input {
+  width: 90%;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+}
+
 /* modals */
 
 .modal {
@@ -309,6 +323,20 @@ a:hover {
   overflow-y: auto;
   margin: 2px;
   padding: 0.4rem;
+  line-height: 1.3;
+}
+
+.modal-content ul {
+  padding-left: 1rem;
+}
+
+.modal-content ol {
+  padding-left: 0;
+  list-style-position: inside;
+}
+
+.modal-content li {
+  padding: 0.2rem 0;
 }
 
 .display-block {

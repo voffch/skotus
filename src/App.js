@@ -11,22 +11,15 @@ import pigLogo from './logo.jpg';
 //+ construct custom query via custom forms
 //+ openaccess or grab this article from scihub link
 //+ show the number of citations
-//modals for info 
-//get your own api key and store it in the browser
+//+ modals for info 
+//+ get your own api key and store it in the browser
+//request all coauthors via crossref api
+//show author orcid/affiliation (popup?) if available
+//?more info from crossref if available
 //load "n" results available via successive api requests
 //https://dev.elsevier.com/support.html cursor instead of page pagination ?
 //export search results as text
 //export citation
-//request all coauthors via crossref api
-//show author orcid/affiliation (popup?) if available
-//?more info from crossref if available
-
-const myScopusApiKey = 'a0ea0be72869dfb9e69da96e760f62b9';
-const scopusRequestHeaders = new Headers({
-  'Accept' : 'application/json',
-  'Referrer-Policy' : 'strict-origin-when-cross-origin',
-  'X-ELS-APIKey' : myScopusApiKey
-});
 
 function Query({field = 'AU-ID', text = '', bool = 'AND', id = 0} = {}) {
   this.id = id;
@@ -393,6 +386,28 @@ function MoreButton({replyJSON, handleQuery}) {
   }
 }
 
+function ScopusApiKey({apiKey, handler}) {
+  let labelText = 'thank you for using your own API key';
+  let labelClass = 'allright-text';
+  if (apiKey === '') {
+    labelText = 'please do not use my API key';
+    labelClass = 'error-text';
+  }
+  return (
+    <div className='api-key-input-container'>
+    <input 
+      id="scopus-api-key-input" 
+      type="text" 
+      placeholder="you're using my API key" 
+      value = {apiKey} 
+      onChange={e => {
+        handler(e.target.value);
+      }} />
+    <label htmlFor="scopus-api-key-input" className={labelClass}>{labelText}</label>
+    </div>
+  );
+}
+
 const Modal = ({ handleClose, modalShown, header, children }) => {
   const showHideClassName = (modalShown === header) ? "modal display-block" : "modal display-none";
 
@@ -416,9 +431,26 @@ function App() {
   const [replyJSON, setReplyJSON] = useState(null);
   const [entries, setEntries] = useState([]);
   const [modalShown, setModalShown] = useState('');
+  const [scopusApiKeyText, setScopusApiKeyText] = useState(() => {
+    const storedKey = window.localStorage.getItem("scopusApiKey");
+    return storedKey !== null ? storedKey : '';
+  });
+
+  const handleApiKeyChange = (apiKey) => {
+    const newApiKey = apiKey.trim();
+    window.localStorage.setItem("scopusApiKey", newApiKey); //could also be done with useEffect
+    setScopusApiKeyText(newApiKey);
+  };
 
   const handleQuery = (newQuery) => {
     let url = 'https://api.elsevier.com/content/search/scopus';
+    const myScopusApiKey = 'a0ea0be72869dfb9e69da96e760f62b9';
+    const apiKey = scopusApiKeyText ? scopusApiKeyText : myScopusApiKey;
+    const scopusRequestHeaders = new Headers({
+      'Accept' : 'application/json',
+      'Referrer-Policy' : 'strict-origin-when-cross-origin',
+      'X-ELS-APIKey' : apiKey
+    });
     //if not newQuery, then continue the old one
     const continueQuery = !newQuery;
     let startIndex = 0;
@@ -478,12 +510,18 @@ function App() {
   return (
     <>
       <header className='header-main'>
-        <img src={pigLogo} alt="pig logo" />
+        <img src={pigLogo} alt="pig logo" width="85" height="60" />
         <h1>Skotus <span className="text-gray">Eternal Beta</span></h1>
         <ul className='header-links-container'>
-          <li><button className="button-link-lookalike" onClick={() => setModalShown('Search Hints')}>Hints</button></li>
-          <li><button className="button-link-lookalike" onClick={() => setModalShown('API Key')}>API Key</button></li>
-          <li><button className="button-link-lookalike" onClick={() => setModalShown('What is it?')}>What?</button></li>
+          <li key='Search Hints'>
+            <button className="button-link-lookalike" onClick={() => setModalShown('Search Hints')}>Hints</button>
+          </li>
+          <li key='API Key'>
+            <button className={scopusApiKeyText === '' ? "button-link-lookalike error-text" : "button-link-lookalike"} onClick={() => setModalShown('API Key')}>API Key</button>
+          </li>
+          <li key='What is it?'>
+            <button className="button-link-lookalike" onClick={() => setModalShown('What is it?')}>What?</button>
+          </li>
         </ul>
       </header>
       <main>
@@ -499,19 +537,38 @@ function App() {
         <p className='text-small'>this website is not affiliated with Scopus; click the links in the header to learn more</p>
       </footer>
       <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='What is it?'>
-        <p>disclaimer</p>
+        <p>This app is a user interface to <a href="https://dev.elsevier.com/sc_apis.html" target="_blank" rel='noreferrer'>Scopus Search API</a>. It provides the basic search opportunities to the end users. Because this is a client-side app, it doesn't store any Scopus data on any server (what server lol?). The end user is you, so you are responsible. Deal with it. This was a disclaimer, btw.</p>
+        <p>This is neither free Scopus nor free lunch (<a href="https://en.wikipedia.org/wiki/There_ain%27t_no_such_thing_as_a_free_lunch" target="_blank" rel='noreferrer'>TANSTAAFL</a>). There are severe restrictions on the content returned in the search responses, the number of search request, and, most importantly, permitted use cases. As the end user, you must also agree with the terms and conditions (see the link below). You've been warned.</p>
+        <p>In fact, by using this app you automatically agree to those because I just said so. For your convenience, here's a checkbox that you cannot uncheck explaining what you've just agreed to.</p>
         <label htmlFor='agreed-to-everything'>
           <input id="agreed-to-everything" type="checkbox" checked readOnly onClick={(e) => e.preventDefault()} />{' '}
-          I (that means YOU) agree to the terms, conditions and use policies defined for <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Scopus Search API</a> and solemnly swear to use this tool as indended
+          By using this app, I (that means YOU) agree to the terms, conditions and use policies defined for Scopus Search API on the <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Elsevier Developer Portal</a> and solemnly swear to use this tool as indended therein.
         </label>
-        <p>See how easy that was? Now we're all set! Go get your own API key, and happy searching!</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam orci augue, gravida a mattis sed, placerat id eros. Aliquam suscipit molestie maximus. Mauris sit amet ornare mi. Curabitur imperdiet enim felis. In rutrum, metus sit amet eleifend viverra, nisl ex condimentum nulla, non pulvinar libero magna a nisl. Nam pretium quis ante id condimentum. Phasellus ex risus, aliquet ac sem ac, venenatis semper odio. Suspendisse enim nunc, scelerisque non arcu eu, fringilla faucibus sem. Nulla id felis posuere, viverra ante a, cursus arcu. Praesent ultricies at est sit amet varius. Vestibulum pellentesque gravida magna, sed lacinia purus aliquam sit amet. In urna lacus, mollis bibendum ante a, sollicitudin commodo elit. Nunc tempus ligula finibus porta placerat. Nulla leo diam, vulputate vel tristique id, imperdiet at elit. Etiam et mattis felis, quis luctus lorem.</p>
+        <p>See how easy that was? Now we're all set! Go <button className="button-link-lookalike" onClick={() => setModalShown('API Key')}>get your own API key</button>, and happy searching!</p>
+        <p>If, after careful evaluation, you still disagree with something or other, please close this page and never come back again.</p>
       </Modal>
       <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='Search Hints'>
-        <p><a href='https://dev.elsevier.com/sc_search_tips.html' target='_blank' rel='noreferrer'>Query Language Tips</a></p>
+        <ul>
+          <li key='1'>To execute more precise query, enclose the string you are searching in double quotes, <strong>""</strong>. This is especially important for the search requests containing boolean-like words (and, or, not) that are intended to be just words and not the boolean commands for the search engine.</li>
+          <li key='2'>To be even more precise, use <strong>{'{}'}</strong> instead of the double quotes.</li>
+          <li key='3'>To find the articles of a specific author, you may use the <a href="https://www.scopus.com/freelookup/form/author.uri" target="_blank" rel='noreferrer'>Free Scopus Author Search</a> to find their Scopus Author ID first, and then run the search here with this ID.</li>
+          <li key="4">If you're getting 429 TOO MANY REQUESTS errors, you may have exhausted <a href="https://dev.elsevier.com/api_key_settings.html" target="_blank" rel='noreferrer'>your API key quota</a>. The quota resets every week. If you're tech savvy, you can open the browser console and check the <em>x-ratelimit-remaining</em> and <em>x-ratelimit-reset</em> response headers. I'd've shown those to you, but, sadly, <em>someone</em> on the server side hasn't discovered <em>Access-Control-Expose-Headers</em> yet (perhaps, on purpose).</li>
+          <li key="5">If you're getting some other error, there's something wrong with either my scripts or your search requests. You may try different requests or contact me (if you know how).</li>
+        </ul>
+        <p>And if you're feeling nerdy or adventurous, like to read documentation, or my custom search form breaks down upon your search requests, you can always check out the official <a href='https://dev.elsevier.com/sc_search_tips.html' target='_blank' rel='noreferrer'>Scopus Search Guide</a> and even construct your own Custom Query.</p>
       </Modal>
       <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='API Key'>
-        <p>key key apikey</p>
+        <ScopusApiKey apiKey={scopusApiKeyText} handler={(apiKey) => handleApiKeyChange(apiKey)} />
+        <p>Think of the API key as an access token that Scopus provides to you for using their services. By default, this app is configured to use my API key. Unless you are I, you shouldn't do that because (a) Scopus does not allow and may not tolerate this and (b) there's a limited search request quota for each personal key. Believe me, you'll be more comfortable spending your own quota than sharing the limited number of allowed search requests with persons unknown. Sharing is Communism, which doesn't always end well (wink wink).</p>
+        <ol>So you should go and get your own key. Here's how:
+          <li key='1'>Go to <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Elsevier Developer Portal</a></li>
+          <li key='2'>Click <em>I want an API key</em></li>
+          <li key='3'>Login or register an account</li>
+          <li key='4'>Click <em>Create API Key</em> (on the <a href="https://dev.elsevier.com/apikey/manage" target="_blank" rel='noreferrer'>key manage page</a>) while logged in</li>
+          <li key='5'>Label doesn't matter, but don't forget to set the URL of this page as the <em>Website URL</em>. The URL is: <u>{window.location.href}</u></li>
+          <li key='6'>Agree to everything and submit</li>
+          <li key='7'>Paste your key into the input above, and it will be stored locally in your browser and automatically loaded when you refresh the page</li>
+        </ol>
       </Modal>
     </>
   );
