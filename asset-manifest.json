@@ -1,14 +1,15 @@
 {
   "files": {
-    "main.css": "/skotus/static/css/main.4869d03e.css",
-    "main.js": "/skotus/static/js/main.8eca35e5.js",
+    "main.css": "/skotus/static/css/main.552ea2f4.css",
+    "main.js": "/skotus/static/js/main.fc181d08.js",
     "static/media/logo.jpg": "/skotus/static/media/logo.ece5d0594a66517d6ed0.jpg",
+    "static/media/ORCIDiD_iconvector.svg": "/skotus/static/media/ORCIDiD_iconvector.83064addb86ad013bb4df9e1549edd13.svg",
     "index.html": "/skotus/index.html",
-    "main.4869d03e.css.map": "/skotus/static/css/main.4869d03e.css.map",
-    "main.8eca35e5.js.map": "/skotus/static/js/main.8eca35e5.js.map"
+    "main.552ea2f4.css.map": "/skotus/static/css/main.552ea2f4.css.map",
+    "main.fc181d08.js.map": "/skotus/static/js/main.fc181d08.js.map"
   },
   "entrypoints": [
-    "static/css/main.4869d03e.css",
-    "static/js/main.8eca35e5.js"
+    "static/css/main.552ea2f4.css",
+    "static/js/main.fc181d08.js"
   ]
 }
