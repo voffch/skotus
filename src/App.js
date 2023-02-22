@@ -393,8 +393,8 @@ function MoreButton({replyJSON, handleQuery}) {
   }
 }
 
-const Modal = ({ handleClose, show, header, children }) => {
-  const showHideClassName = show ? "modal display-block" : "modal display-none";
+const Modal = ({ handleClose, modalShown, header, children }) => {
+  const showHideClassName = (modalShown === header) ? "modal display-block" : "modal display-none";
 
   return (
     <div className={showHideClassName} onClick={handleClose}>
@@ -415,7 +415,7 @@ function App() {
   const [reply, setReply] = useState(null);
   const [replyJSON, setReplyJSON] = useState(null);
   const [entries, setEntries] = useState([]);
-  const [modalShowWhat, setModalShowWhat] = useState(false);
+  const [modalShown, setModalShown] = useState('');
 
   const handleQuery = (newQuery) => {
     let url = 'https://api.elsevier.com/content/search/scopus';
@@ -480,9 +480,11 @@ function App() {
       <header className='header-main'>
         <img src={pigLogo} alt="pig logo" />
         <h1>Skotus <span className="text-gray">Eternal Beta</span></h1>
-        <div className='header-links-container'>
-          <button className="button-link-lookalike" onClick={() => setModalShowWhat(true)}>What?</button>
-        </div>
+        <ul className='header-links-container'>
+          <li><button className="button-link-lookalike" onClick={() => setModalShown('Search Hints')}>Hints</button></li>
+          <li><button className="button-link-lookalike" onClick={() => setModalShown('API Key')}>API Key</button></li>
+          <li><button className="button-link-lookalike" onClick={() => setModalShown('What is it?')}>What?</button></li>
+        </ul>
       </header>
       <main>
         <SearchForm onSubmit={handleQuery} />
@@ -492,16 +494,24 @@ function App() {
         <MoreButton replyJSON={replyJSON} handleQuery={handleQuery} />
       </main>
       <footer>
-        <p>these data were obtained via <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Scopus API</a></p>
-        <p><a href='https://dev.elsevier.com/sc_search_tips.html' target='_blank' rel='noreferrer'>Query Language Tips</a></p>
+        <p>these data were obtained via <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Scopus Search API</a></p>
         <p>see also <a href="https://www.scopus.com/freelookup/form/author.uri" target="_blank" rel='noreferrer'>Free Scopus Author Search</a></p>
+        <p className='text-small'>this website is not affiliated with Scopus; click the links in the header to learn more</p>
       </footer>
-      <Modal show={modalShowWhat} handleClose={() => setModalShowWhat(false)} header='What is it?'>
+      <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='What is it?'>
+        <p>disclaimer</p>
+        <label htmlFor='agreed-to-everything'>
+          <input id="agreed-to-everything" type="checkbox" checked readOnly onClick={(e) => e.preventDefault()} />{' '}
+          I (that means YOU) agree to the terms, conditions and use policies defined for <a href="https://dev.elsevier.com" target="_blank" rel='noreferrer'>Scopus Search API</a> and solemnly swear to use this tool as indended
+        </label>
+        <p>See how easy that was? Now we're all set! Go get your own API key, and happy searching!</p>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam orci augue, gravida a mattis sed, placerat id eros. Aliquam suscipit molestie maximus. Mauris sit amet ornare mi. Curabitur imperdiet enim felis. In rutrum, metus sit amet eleifend viverra, nisl ex condimentum nulla, non pulvinar libero magna a nisl. Nam pretium quis ante id condimentum. Phasellus ex risus, aliquet ac sem ac, venenatis semper odio. Suspendisse enim nunc, scelerisque non arcu eu, fringilla faucibus sem. Nulla id felis posuere, viverra ante a, cursus arcu. Praesent ultricies at est sit amet varius. Vestibulum pellentesque gravida magna, sed lacinia purus aliquam sit amet. In urna lacus, mollis bibendum ante a, sollicitudin commodo elit. Nunc tempus ligula finibus porta placerat. Nulla leo diam, vulputate vel tristique id, imperdiet at elit. Etiam et mattis felis, quis luctus lorem.</p>
-        <p>Nulla facilisi. Aliquam accumsan malesuada fermentum. Phasellus dictum, dolor et vestibulum facilisis, diam nisl fermentum purus, ut convallis sem mauris nec quam. Donec condimentum quis mauris ut maximus. Aliquam eget metus in felis faucibus fringilla molestie eu metus. Etiam a nibh enim. Suspendisse suscipit vehicula augue ac lobortis. Suspendisse velit arcu, accumsan sed aliquet quis, maximus non odio. In porta finibus odio, quis cursus augue euismod vel. Nulla sapien mauris, malesuada a dui ultrices, commodo mattis ante. Nulla eleifend aliquet nunc a vestibulum. Praesent rutrum ligula ut bibendum varius. Etiam sapien tortor, tristique eu fermentum nec, pulvinar at dolor. Praesent at condimentum lacus, in pellentesque arcu.</p>
-        <p>In hac habitasse platea dictumst. Aenean venenatis sem at dolor maximus, ac elementum nisl aliquam. Aenean et placerat felis, in pulvinar sapien. Pellentesque commodo purus nec nunc auctor euismod. Nulla odio velit, ultrices ut nisi vitae, molestie pretium lectus. Cras in dolor justo. Curabitur ornare placerat mi, in tristique risus ornare at. Nullam vestibulum ultrices vulputate. Donec ornare fringilla dui in mollis. Praesent mollis sem rhoncus, pellentesque lacus non, imperdiet dui. Nullam mollis nisl id suscipit placerat. Nunc facilisis erat nec orci fermentum, fermentum maximus orci ornare. Aliquam libero felis, mattis vel lectus eget, varius congue ipsum. Pellentesque quis quam rhoncus, consectetur enim at, venenatis dolor. Pellentesque eu mauris ornare, tristique ipsum sit amet, laoreet nisi. Maecenas lectus nisl, lacinia eu dapibus ut, iaculis sed risus.</p>
-        <p>Pellentesque pretium tortor nec est vulputate, eu accumsan odio vestibulum. Morbi aliquam neque sit amet rutrum ultricies. Mauris eu lorem magna. Morbi non tincidunt nibh. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Vestibulum ut purus dapibus velit volutpat mollis. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum sed arcu metus. Aliquam bibendum quis sapien at molestie. Maecenas luctus ante vitae nunc sodales, lacinia pellentesque libero hendrerit. Vestibulum nec varius sapien, id vulputate purus. Suspendisse finibus rhoncus odio, quis bibendum ipsum condimentum non. Sed sagittis eu ex at feugiat. Nunc ligula eros, laoreet sit amet magna in, facilisis laoreet dui. Proin tristique suscipit leo.</p>
-        <p>Nunc mi nunc, egestas et vulputate eget, ultricies nec tellus. Curabitur euismod diam mauris, vel molestie magna molestie id. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Nunc rutrum maximus est, eget consectetur mi blandit quis. Nulla ornare vestibulum arcu, vel scelerisque ex congue at. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In gravida lectus sit amet mollis malesuada. Donec molestie dui nisl, at lacinia elit volutpat pretium. Praesent vel nisl ultricies, scelerisque ex at, luctus odio. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed aliquet dictum cursus. Sed pulvinar luctus ligula. Duis eu ipsum justo. Mauris sit amet facilisis odio. Donec nunc magna, convallis eu lacus sit amet, faucibus porta neque. Praesent finibus nec mi ac venenatis.</p>
+      </Modal>
+      <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='Search Hints'>
+        <p><a href='https://dev.elsevier.com/sc_search_tips.html' target='_blank' rel='noreferrer'>Query Language Tips</a></p>
+      </Modal>
+      <Modal modalShown={modalShown} handleClose={() => setModalShown('')} header='API Key'>
+        <p>key key apikey</p>
       </Modal>
     </>
   );

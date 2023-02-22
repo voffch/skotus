@@ -29,6 +29,13 @@ body {
 
 .header-links-container {
   margin-left: auto;
+  list-style: none;
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.header-links-container li {
+  padding: 0.5rem;
 }
 
 .header-main img {
@@ -67,26 +74,34 @@ footer p {
   margin: 0.5rem 0;
 }
 
+.text-small {
+  font-size: 0.7rem;
+}
+
 .button-link-lookalike {
 	background: none;
-	color: inherit;
+	color: var(--skotus-blue);
 	border: none;
 	padding: 0;
 	font: inherit;
 	cursor: pointer;
 	outline: inherit;
+  transform: color 0.2s;
 }
 
-a, 
-.button-link-lookalike {
+.button-link-lookalike:hover {
+  color: var(--skotus-orange);
+}
+
+a {
   text-decoration: none;
   padding-bottom: 1px;
   color: var(--skotus-blue);
   border-bottom: 2px solid transparent;
+  transform: all 0.2s;
 }
 
-a:hover,
-.button-link-lookalike:hover {
+a:hover {
   border-bottom: 2px solid var(--skotus-orange);
 }
 
@@ -268,7 +283,7 @@ a:hover,
   display: flex;
   align-items: center;
   color: white;
-  padding: 1rem;
+  padding: 1rem calc(0.4rem + 2px);
 }
 
 .modal-header h2 {
@@ -291,9 +306,9 @@ a:hover,
 
 .modal-content {
   max-height: 70vh;
-  overflow-y: scroll;
+  overflow-y: auto;
   margin: 2px;
-  padding: 0.3rem;
+  padding: 0.4rem;
 }
 
 .display-block {
