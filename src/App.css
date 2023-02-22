@@ -1,3 +1,5 @@
+/* overall structure */
+
 * {
   box-sizing: border-box;
 }
@@ -65,17 +67,30 @@ footer p {
   margin: 0.5rem 0;
 }
 
-a {
+.button-link-lookalike {
+	background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+}
+
+a, 
+.button-link-lookalike {
   text-decoration: none;
   padding-bottom: 1px;
   color: var(--skotus-blue);
+  border-bottom: 2px solid transparent;
 }
 
-a:hover {
+a:hover,
+.button-link-lookalike:hover {
   border-bottom: 2px solid var(--skotus-orange);
 }
 
-/*===*/
+/* search results */
 
 .error-text {
   color: red;
@@ -221,4 +236,62 @@ a:hover {
 .more-button-container {
   margin: 0 auto;
   text-align: center;
+}
+
+/* modals */
+
+.modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-window {
+  position:fixed;
+  background: white;
+  width: 90%;
+  height: auto;
+  top:50%;
+  left:50%;
+  transform: translate(-50%,-50%);
+}
+
+.modal-header {
+  width: 100%;
+  background: var(--skotus-orange);
+  color: white;
+  padding: 1rem;
+  font-size: 1.5rem;
+}
+
+.modal-close-button {
+	background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+  font-size: 2rem;
+}
+
+.modal-content {
+  max-height: 70vh;
+  overflow-y: scroll;
+  margin: 2px;
+  padding: 0.3rem;
+}
+
+.display-block {
+  display: block;
+}
+
+.display-none {
+  display: none;
 }
