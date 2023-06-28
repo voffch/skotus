@@ -402,7 +402,7 @@ function AccessIndicator({e}) {
   if (e["openaccessFlag"]) {
     return <p className='access-indicator'>This is an open access article</p>;
   } else if (e["prism:doi"]) {
-    const sciHubHref = `https://sci-hub.ru/${e["prism:doi"]}`;
+    const sciHubHref = `https://sci-hub.wf/${e["prism:doi"]}`;
     return <p className='access-indicator'><a href={sciHubHref} target="_blank" rel='noreferrer'>Grab this from SciHub</a></p>;
   } else {
     return null;
